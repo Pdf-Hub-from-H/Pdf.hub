@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Study PDF Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --dark:#1e272e;
+  --primary:#0984e3;
+  --success:#2ecc71;
+  --bkash:#E2136E;
+  --bg:#f2f2f2;
+}
+
+body{
+ font-family: Arial, sans-serif;
+ margin:0;
+ background:var(--bg);
+}
+
+header{
+ background:var(--dark);
+ color:white;
+ padding:15px;
+ text-align:center;
+}
+
+.logo{
+ width:90px;
+ height:90px;
+ border-radius:50%;
+ margin-bottom:5px;
+}
+
+.nav{
+ display:flex;
+ justify-content:center;
+ gap:10px;
+ flex-wrap:wrap;
+ margin-top:10px;
+}
+
+.nav button{
+ background:var(--primary);
+ color:white;
+ border:none;
+ padding:10px 15px;
+ border-radius:6px;
+ cursor:pointer;
+}
+
+.container{
+ width:90%;
+ margin:auto;
+}
+
+.section{
+ background:white;
+ padding:15px;
+ margin:15px 0;
+ border-radius:12px;
+ box-shadow:0 0 8px rgba(0,0,0,0.1);
+}
+
+.products{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+ gap:15px;
+}
+
+.card{
+ background:white;
+ padding:10px;
+ border-radius:12px;
+ box-shadow:0 0 6px rgba(0,0,0,0.1);
+ text-align:center;
+}
+
+.card img{
+ width:100%;
+ height:220px;
+ object-fit:cover;
+ border-radius:10px;
+}
+
+.price{
+ color:red;
+ font-weight:bold;
+ font-size:18px;
+}
+
+button{
+ width:100%;
+ padding:10px;
+ margin:5px 0;
+ border:none;
+ border-radius:6px;
+ cursor:pointer;
+}
+
+.buy{background:var(--success);color:white;}
+.bkash{background:var(--bkash);color:white;}
+
+input,select{
+ width:100%;
+ padding:8px;
+ margin:5px 0;
+}
+
+table{
+ width:100%;
+ border-collapse:collapse;
+}
+th,td{
+ border:1px solid #ddd;
+ padding:8px;
+ text-align:left;
+}
+th{
+ background:var(--dark);
+ color:white;
+}
+
+.status-pending{color:red;font-weight:bold;}
+.status-verified{color:green;font-weight:bold;}
+</style>
+
+<script>
+// ======== EDIT PRODUCTS HERE ========
+const products = [
+ {name:"Physics 1st Paper Notes", price:150, img:"cover1.jpg"},
+ {name:"Higher Math Notes", price:120, img:"cover2.jpg"},
+ // Add more like this:
+ // {name:"Chemistry Notes", price:130, img:"cover3.jpg"},
+];
+
+// ======== LOAD PRODUCTS ========
+function loadProducts(){
+ let box = document.getElementById("productBox");
+ box.innerHTML="";
+
+ products.forEach((p)=>{
+   box.innerHTML += `
+   <div class="card">
+     <img src="${p.img}">
+     <h3>${p.name}</h3>
+     <p class="price">৳${p.price}</p>
+
+     <button class="buy" onclick="orderNow('${p.name}',${p.price})">
+       Buy Now (WhatsApp/Telegram/FB)
+     </button>
+
+     <button class="bkash"
+     onclick="bkashPay('${p.name}',${p.price})">
+       Pay with bKash
+     </button>
+   </div>
+   `;
+ });
+}
+
+// ======== BUY NOW (SENDS ORDER) ========
+function orderNow(product, price){
+
+ let name = document.getElementById("name").value;
+ let roll = document.getElementById("roll").value;
+ let mobile = document.getElementById("mobile").value;
+ let platform = document.getElementById("platform").value;
+
+ if(name==""||mobile==""){
+   alert("Fill Name & Mobile first!");
+   return;
+ }
+
+ let msg =
+ "NEW ORDER%0A"+
+ "Product: "+product+"%0A"+
+ "Price: ৳"+price+"%0A"+
+ "Name: "+name+"%0A"+
+ "Roll: "+roll+"%0A"+
+ "Mobile: "+mobile;
+
+ saveOrder(name, product, price, mobile);
+
+ if(platform=="WhatsApp"){
+  window.location.href=
+  "https://wa.me/8801781404212?text="+msg;
+ }
+ else if(platform=="Telegram"){
+  window.location.href=
+  "https://t.me/Hasib0880?text="+msg;
+ }
+ else{
+  alert("Click OK to open Messenger.");
+  window.location.href=
+  "https://www.facebook.com/share/1Byk4FDRj7/";
+ }
+}
+
+// ======== bKASH PAYMENT (INSIDE BUY OPTION) ========
+function bkashPay(product, price){
+ alert(
+ "Send bKash to: 01781404212\n"+
+ "Amount: ৳"+price+"\n\n"+
+ "After payment, click BUY NOW and send your order."
+ );
+}
+
+// ======== SAVE ORDER ========
+function saveOrder(name, product, price, mobile){
+ let old = JSON.parse(localStorage.getItem("orders")||"[]");
+
+ old.push({
+  name:name,
+  product:product,
+  price:price,
+  mobile:mobile,
+  time:new Date().toLocaleString(),
+  status:"Pending"
+ });
+
+ localStorage.setItem("orders", JSON.stringify(old));
+ showOrders();
+}
+
+// ======== SHOW ORDER LIST ========
+function showOrders(){
+ let table = document.getElementById("orderTable");
+ let data = JSON.parse(localStorage.getItem("orders")||"[]");
+
+ table.innerHTML = `
+ <tr>
+  <th>Name</th>
+  <th>Product</th>
+  <th>Price</th>
+  <th>Mobile</th>
+  <th>Time</th>
+  <th>Status</th>
+  <th>Action</th>
+ </tr>
+ `;
+
+ data.forEach((o,i)=>{
+  table.innerHTML += `
+  <tr>
+   <td>${o.name}</td>
+   <td>${o.product}</td>
+   <td>৳${o.price}</td>
+   <td>${o.mobile}</td>
+   <td>${o.time}</td>
+   <td class="${o.status=='Verified'?'status-verified':'status-pending'}">
+     ${o.status}
+   </td>
+   <td>
+    <button onclick="setStatus(${i},'Verified')">Verify</button>
+    <button onclick="setStatus(${i},'Pending')">Pending</button>
+   </td>
+  </tr>
+  `;
+ });
+}
+
+// ======== CHANGE STATUS (ADMIN) ========
+function setStatus(index, status){
+ let data = JSON.parse(localStorage.getItem("orders")||"[]");
+ data[index].status = status;
+ localStorage.setItem("orders", JSON.stringify(data));
+ showOrders();
+}
+
+// ======== PAGE SWITCH ========
+function show(page){
+ document.getElementById("shop").style.display="none";
+ document.getElementById("orders").style.display="none";
+ document.getElementById(page).style.display="block";
+}
+</script>
+</head>
+
+<body onload="loadProducts(); showOrders(); show('shop');">
+
+<header>
+<img src="logo.png" class="logo" alt="Logo">
+<h2>Study PDF Hub</h2>
+
+<div class="nav">
+<button onclick="show('shop')">Shop</button>
+<button onclick="show('orders')">Order List</button>
+</div>
+</header>
+
+<div class="container">
+
+<!-- ===== SHOP PAGE ===== -->
+<div class="section" id="shop">
+<h3>Student Information</h3>
+<input id="name" placeholder="Your Name">
+<input id="roll" placeholder="Roll No">
+<input id="mobile" placeholder="Mobile Number">
+
+<select id="platform">
+<option>WhatsApp</option>
+<option>Telegram</option>
+<option>Facebook</option>
+</select>
+
+<h3>Available Notes</h3>
+<div class="products" id="productBox"></div>
+</div>
+
+<!-- ===== ORDER LIST ===== -->
+<div class="section" id="orders" style="display:none;">
+<h3>📋 Order List</h3>
+<table id="orderTable"></table>
+<button onclick="localStorage.clear(); showOrders();">
+Clear All Orders
+</button>
+</div>
+
+</div>
+</body>
+</html>
